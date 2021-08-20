@@ -9,31 +9,37 @@ import { firebaseStore } from './firebase/index';
 function App() {
   const [users, setUsers] = useState<firebase.firestore.DocumentData[]>([]);
   const [user, setUser] = useState({
-    mail: String,
-    address: String,
-    name: String,
+    mail: "未設定",
+    address: "未設定",
+    name: "未設定",
     id: Number
   });
 
+  const [mail, setMail] = useState<string>();
+  const [address, setAddress] = useState<string>();
+  const [name, setName] = useState<string>();
 
+  const searchUsers = async () => {
+    // Firestoreのコレクションを指定してデータ取得
+    const res = await firebaseStore.collection('users').get();
+    if (res.empty) return [];
+    const userList: firebase.firestore.DocumentData[] = [];
+    // DocumentData型にはmapメソッドが定義されていないため、forEachのループでデータを加工
+    res.forEach(doc => {
+      userList.push(doc.data());
+    })
+    setUsers(userList);
+
+    userList.forEach((u: any) => {
+      if (u.id == 1) {
+        setUser(u);
+      }
+    });
+  }
 
 
   useEffect(() => {
-    const searchUsers = async () => {
-      // Firestoreのコレクションを指定してデータ取得
-      const res = await firebaseStore.collection('users').get();
-      if (res.empty) return [];
-      const userList: firebase.firestore.DocumentData[] = [];
-      // DocumentData型にはmapメソッドが定義されていないため、forEachのループでデータを加工
-      res.forEach(doc => {
-        userList.push(doc.data());
-      })
-      setUsers(userList);
 
-      console.log(users);
-
-
-    }
     searchUsers();
 
     /*     const addUsers = async () => {
@@ -53,16 +59,6 @@ function App() {
 
   }, []);
 
-  const userInfo = users.map((u: any) => {
-    if (u.id == 1) {
-      return u;
-    }
-  });
-
-
-  console.log(userInfo);
-
-
 
 
 
@@ -70,21 +66,21 @@ function App() {
   return (
     <div className="App">
       <div className="App-header">
-        <h1>個人情報</h1>
-        name: <p> {user.name}</p>
-        address: <p> {user.address}</p>
-        mail: <p> {user.mail}</p>
-
-
-        <input type="text" />
-
-        {
-          users.map((user: any, index) => {
-            return <p key={index}> {user.name}</p>
-          })}
-
+        <h1>マイページ</h1>
+        <p>名前 : {user.name}</p>
+        <p>住所 : {user.address}</p>
+        <p>メールアドレス : {user.mail}</p>
+        <h1>新規登録</h1>
+        <p>名前</p>
+        <input name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} /><br />
+        <p>住所</p>
+        <input name="address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} /><br />
+        <p>メールアドレス</p>
+        <input name="mail" type="text" value={mail} onChange={(e) => setMail(e.target.value)} /><br />
+        <p>
+          {name},{address},{mail}
+        </p>
       </div>
-
     </div>
   );
 }
