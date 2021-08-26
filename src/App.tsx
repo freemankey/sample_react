@@ -5,28 +5,25 @@ import './App.css';
 import firebase from 'firebase';
 import { firebaseStore } from './firebase/index';
 
-//import 'firebase/auth'
-
 
 function App() {
   //DB表示関係
-  const [users, setUsers] = useState<firebase.firestore.DocumentData[]>([]);
   const [user, setUser] = useState({
     mail: "未設定",
     address: "未設定",
     name: "未設定",
-    id: -1
+    gmail: ""
   });
 
   //DB削除関係
-  const [id, setId] = useState<number>(99);
   const [documentPath, setdocumentPath] = useState<string>();
 
   //googleログイン関係
   const [g_user, setG_user] = useState<any>();
 
-  //DB登録フラグ
+  //DB登録ボタンフラグ
   const [flagUser, setflagUser] = useState<number>(0);
+
 
   //googleログアウト
   const logoutWithGoogle = () => {
@@ -34,32 +31,31 @@ function App() {
     window.location.href = '/';
   }
 
-  //ユーザ取得
-  const searchUsers = async () => {
+  //DB取得
+  const searchUsers = async (user: any) => {
     // Firestoreのコレクションを指定してデータ取得
     const res = await firebaseStore.collection('users').get();
-    if (res.empty) return [];
-    const userList: firebase.firestore.DocumentData[] = [];
 
-    //未登録時ボタン
+    //未登録時ボタンフラグ
     setflagUser(1);
+
+    if (res.empty) return [];
+
 
     // DocumentData型にはmapメソッドが定義されていないため、forEachのループでデータを加工
     res.forEach((doc: any) => {
-      userList.push(doc.data());
-      if (doc.data().id == id) {
+      if (doc.data().gmail == user.email) {
         setUser(doc.data());
         setdocumentPath(doc.id);
 
-        //登録時ボタン
+        //登録時ボタンフラグ
         setflagUser(2);
       }
     })
-    setUsers(userList);
-
   }
 
-  //ユーザ削除
+  console.log(flagUser);
+  //DB削除
   const removeUser = async () => {
     try {
       await firebaseStore.collection('users').doc(documentPath).delete();
@@ -72,12 +68,12 @@ function App() {
 
   useEffect(() => {
 
-    searchUsers();
-
     //googleログイン
     firebase.auth().onAuthStateChanged((user: any) => {
       setG_user(user);
+      searchUsers(user);
     })
+
   }, []);
 
 
@@ -98,6 +94,7 @@ function App() {
     window.location.href = '/signup';
   }
 
+  //DB登録＆削除ボタンの表示
   let viewbutton;
   if (flagUser == 1) {
     viewbutton = (
@@ -122,7 +119,6 @@ function App() {
         <p>名前 : {user.name}</p>
         <p>住所 : {user.address}</p>
         <p>メールアドレス : {user.mail}</p>
-
 
       </div>
     </div>
