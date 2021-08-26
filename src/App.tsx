@@ -26,7 +26,7 @@ function App() {
   const [g_user, setG_user] = useState<any>();
 
   //DB登録フラグ
-  const [handleUser, setHandleUser] = useState<any>();
+  const [flagUser, setflagUser] = useState<number>(0);
 
   //googleログアウト
   const logoutWithGoogle = () => {
@@ -42,22 +42,17 @@ function App() {
     const userList: firebase.firestore.DocumentData[] = [];
 
     //未登録時ボタン
-    setHandleUser(
-      <button type="button" onClick={signup}>新規登録</button>
-    );
+    setflagUser(1);
 
     // DocumentData型にはmapメソッドが定義されていないため、forEachのループでデータを加工
     res.forEach((doc: any) => {
       userList.push(doc.data());
       if (doc.data().id == id) {
         setUser(doc.data());
-        console.log(doc.id);
         setdocumentPath(doc.id);
 
         //登録時ボタン
-        setHandleUser(
-          <button type="button" onClick={removeUser}>ユーザ情報削除</button>
-        );
+        setflagUser(2);
       }
     })
     setUsers(userList);
@@ -67,13 +62,12 @@ function App() {
   //ユーザ削除
   const removeUser = async () => {
     try {
-      console.log(documentPath);
       await firebaseStore.collection('users').doc(documentPath).delete();
     } catch (error) {
       console.log(error);
     }
 
-    //window.location.reload();
+    window.location.reload();
   }
 
   useEffect(() => {
@@ -86,13 +80,14 @@ function App() {
     })
   }, []);
 
+
   //ログアウトボタン，アイコン
   let userInfo;
   if (g_user != null) {
     userInfo =
       (
         <div>
-          <button type="button" onClick={logoutWithGoogle}>Googleログアウト</button>
+          <button type="button" onClick={logoutWithGoogle}>ログアウト</button>
           <img src={g_user.photoURL} />
         </div>
       );
@@ -103,18 +98,18 @@ function App() {
     window.location.href = '/signup';
   }
 
-  //新規登録，ユーザ情報削除
-  //let handleUser;
-  /*   if (user.id == -1) {
-      handleUser = (
-        <button type="button" onClick={signup}>新規登録</button>
-      );
-    } else {
-      handleUser = (
-        <button type="button" onClick={removeUser}>ユーザ情報削除</button>
-      );
-  
-    } */
+  let viewbutton;
+  if (flagUser == 1) {
+    viewbutton = (
+      <button type="button" onClick={signup}>新規登録</button>
+    );
+  } else if (flagUser == 2) {
+    viewbutton = (
+      <button type="button" onClick={removeUser}>ユーザ情報削除</button>
+    );
+
+  }
+
 
   return (
     <div className="App">
@@ -123,7 +118,7 @@ function App() {
         {userInfo}
 
         <h1>マイページ</h1>
-        {handleUser}
+        {viewbutton}
         <p>名前 : {user.name}</p>
         <p>住所 : {user.address}</p>
         <p>メールアドレス : {user.mail}</p>

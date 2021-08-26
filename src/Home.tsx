@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import './Home.css';
 import { Link } from "react-router-dom";
 
 // firebase functions
@@ -39,8 +39,12 @@ function Home() {
 	return (
 		<div className="App">
 			<div className="App-header">
+
 				<h1>ホームページ</h1>
-				<button type="button" onClick={signInWithGoogle}>Googleログイン</button>
+
+				<img src="https://img.icons8.com/color/50/000000/google-logo.png" />
+				<button type="button" onClick={signInWithGoogle}>ログイン</button>
+
 			</div>
 		</div>
 	);
